@@ -1,0 +1,3 @@
+[submodule "EncodingInformation"]
+	path = EncodingInformation
+	url = https://github.com/Waller-Lab/EncodingInformation.git

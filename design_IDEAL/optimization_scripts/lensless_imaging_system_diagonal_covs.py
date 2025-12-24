@@ -1,0 +1,267 @@
+"""
+Building on GaussianPSFLayer with updates from the spectral_diffuser_scope example, plus diagonal covariance matrices.
+
+There is no zero padding in this version of the code, image sizes are assumed to be fixed and much larger.
+"""
+from typing import Tuple, Optional
+import jax
+import jax.numpy as jnp
+from jax import random
+import equinox as eqx
+import matplotlib.pyplot as plt
+import sys
+sys.path.append('/home/lakabuli/workspace/LenslessInfoDesign/EncodingInformation/ideal/')
+from imaging_system import ImagingSystem, ImagingSystemProtocol
+
+class RMLPSFLayer(eqx.Module):
+    """A layer that models the Random Multi-Focal Lenslet Point Spread Function using Gaussians."""
+    # model PSF layer as a bunch of gaussians
+    means: jnp.ndarray  # (N, 2) array of Gaussian centers
+    covs: jnp.ndarray  # (N,) array of Gaussian covariance weights (multiplied by an identity matrix to form actually covariance matrices)
+    weights: jnp.ndarray  # (N,) array of Gaussian weights
+    object_size: int  # don't make them eqx.field(static=True) it can break
+    obj_padding: tuple  # padding for object
+    psf_padding: tuple  # padding for PSF
+    num_gaussians: int  # number of gaussians
+    grid: jnp.ndarray  # cached coordinate grid
+    psf_shape: tuple  # static PSF shape
+    measurement_bias: float  # static measurement bias
+
+    def __init__(self, object_size: int, num_gaussians: int, psf_size: Tuple[int, int] = (32, 32), measurement_bias: Optional[float] = 0.0, key: Optional[jax.random.PRNGKey] = None):
+        super().__init__()
+        key = jax.random.PRNGKey(0) if key is None else key
+        self.num_gaussians = num_gaussians
+        self.object_size = object_size
+        self.psf_shape = psf_size
+        self.measurement_bias = measurement_bias
+
+        # including psf_size shape to ensure it's square
+        assert psf_size[0] == psf_size[1], "PSF size must be square."
+
+        # initialize means randomly within the PSF bounds
+        k1, k2, k3 = jax.random.split(key, 3) 
+        # Create a grid of means uniformly spaced across the PSF
+        grid_size = int(jnp.ceil(jnp.sqrt(num_gaussians)))
+        x = jnp.linspace(-psf_size[0]/2*.7, psf_size[0]/2*.7, grid_size)
+        y = jnp.linspace(-psf_size[1]/2*.7, psf_size[1]/2*.7, grid_size)
+        X, Y = jnp.meshgrid(x, y)
+        grid_means = jnp.stack([Y.flatten(), X.flatten()], axis=1)
+        
+        # Take only the number of means we need and add small random perturbations
+        self.means = grid_means[:num_gaussians] + jax.random.normal(k1, (num_gaussians, 2)) * (psf_size[0]/grid_size/4)
+
+        # self.means = jax.random.uniform(k1, (num_gaussians, 2), 
+        #                             minval = -psf_size[0] // 4,
+        #                             maxval = psf_size[0] // 4) # old version
+
+        # initialize scales randomly
+        self.covs = jax.random.uniform(k2, (num_gaussians,), minval=1, maxval=5)
+
+        # initialize weights uniformly 
+        self.weights = jnp.ones(num_gaussians) / num_gaussians
+
+        # padding calculations
+        self.obj_padding = (0, 0)  # (H, W format)
+        self.psf_padding = (0, 0)
+
+        # create a coordinate grid 
+        y = jnp.linspace(-psf_size[0] // 2, psf_size[0] // 2, psf_size[0])
+        x = jnp.linspace(-psf_size[1] // 2, psf_size[1] // 2, psf_size[1])
+        X, Y = jnp.meshgrid(x, y)
+        self.grid = jnp.stack([Y.flatten(), X.flatten()], axis=1)
+    
+    def compute_psf(self):
+        """
+        Compute the PSF from the current parameters.
+        Ensures energy conservation by normalizing the total sum to 1.
+        Returns a square PSF array.
+        """
+        # Reshape grid for broadcasting
+        grid_expanded = self.grid[None, :, :]  # (1, H*W, 2)
+        means_expanded = self.means[:, None, :]  # (N, 1, 2)
+
+        # Center the coordinates
+        centered = grid_expanded - means_expanded  # (N, H*W, 2) 
+    
+        # Compute quadratic form for each Gaussian
+        # first convert each covariance matrix scale to a 2x2 diagonal matrix
+        covariance_matrices = jax.vmap(lambda w: w * jnp.eye(2))(self.covs)
+        covs_inv = jnp.linalg.inv(covariance_matrices)  # (N, 2, 2)
+        quad_form = jnp.einsum('npi,nij,npj->np', centered, covs_inv, centered)
+        # also including a clip from newer version
+        quad_form_clipped = jnp.clip(quad_form, a_min=-100, a_max=100)
+
+        # Compute Gaussian values
+        gaussians = jnp.exp(-0.5 * quad_form_clipped)  # (N, H*W)
+
+        # Normalize each gaussian individually to ensure it integrates to 1
+        gaussians = gaussians / (jnp.sum(gaussians, axis=1, keepdims=True) + 1e-10)
+
+        # Weight and sum the Gaussians
+        weighted_sum = jnp.sum(self.weights[:, None] * gaussians, axis=0)
+
+        # reshape back to square 2D array
+        psf = weighted_sum.reshape(self.psf_shape[0], self.psf_shape[1]) 
+
+        # Normalize to conserve energy
+        return psf / (jnp.sum(psf) + 1e-10)
+    
+    def __call__(self, x: jnp.ndarray, key: Optional[jax.random.PRNGKey] = None, channels=False, unet=False) -> jnp.ndarray:
+        # compute current PSF
+        psf = self.compute_psf()
+
+        # pad PSF and object
+        psf_pad = jnp.pad(psf, self.psf_padding)
+        obj_pad = jnp.pad(x, self.obj_padding)
+        # convolve
+        if unet:
+            convolved = jax.scipy.signal.fftconvolve(psf_pad, obj_pad, mode='full')
+        else:  # this is the default, normal approach
+            convolved = jax.scipy.signal.fftconvolve(psf_pad, obj_pad, mode='valid')
+        # add measurement bias
+        convolved += self.measurement_bias
+        if channels:
+            return jax.numpy.expand_dims(convolved, axis=0)  # add a channel dimension
+        return convolved
+    
+    def normalize_psf(self):
+        """Ensure weights sum to 1 and that covariance matrices are positive definite."""
+        # instead of ensuring positive definite, just need to change the sigma values on the diagonals
+        min_std = 0.8
+        new_covs = jnp.clip(self.covs, min_std**2, None)  # clips minimum value for sigma squared
+
+        # normalize the weights
+        normalized_weights = self.weights.clip(0) / jnp.sum(self.weights.clip(0) + 1e-10)
+
+        # constrain the means to be within the PSF bounds
+        means = jnp.clip(self.means, -self.psf_shape[0] // 2*.8, self.psf_shape[0] // 2*.8)
+
+        return eqx.tree_at(
+            lambda layer: (layer.covs, layer.weights, layer.means),
+            self,
+            (new_covs, normalized_weights, means),
+        )
+    
+    # Future development: implement _crop2D if need to crop measurements.
+
+
+class LenslessImagingSystem(ImagingSystem):
+    psf_layer: RMLPSFLayer
+    seed: int
+    rng_key: jax.random.PRNGKey
+
+    def __init__(self, psf_layer, seed: int = 0):
+        super().__init__(seed)
+        self.psf_layer = psf_layer
+        self.seed = seed
+        self.rng_key = random.PRNGKey(seed)
+
+    @eqx.filter_jit 
+    def __call__(self, objects: jnp.ndarray) -> jnp.ndarray:
+        """JIT-compiled forward pass."""
+        return self.forward_model(objects)
+    
+    def forward_model(self, objects: jnp.ndarray) -> jnp.ndarray:
+        """Runs forward model for lensless imaging system.
+
+        Args:
+            objects: Input objects of shape (H, W).
+
+        Returns:
+            measurements: Output measurements of shape (H, W)
+        """
+        key = self.next_rng_key()
+        x = self.psf_layer(objects, key=key)
+        # clip the output to be non-negative
+        x = jnp.where(x < 1e-8, 1e-8, x) 
+        return x
+    
+    def reconstruct(self, measurements: jnp.ndarray) -> jnp.ndarray:
+        """
+        Performs reconstruction from the measurements.
+
+        Args:
+            measurements: Input measurements of shape (H, W).
+
+        Returns:
+            reconstructions: Reconstructed objects of shape (H, W).
+        """
+        # Placeholder: Implement reconstruction logic if available.
+        return measurements
+    
+    def toy_images(self, batch_size: int, height: int, width: int) -> jnp.ndarray:
+        """Generates toy images for testing the system.
+
+        Args:
+            batch_size: Number of images to generate.
+            height: Height of each image.
+            width: Width of each image.
+
+        Returns:
+            Toy images of shape (batch_size, height, width).
+        """
+        key = self.next_rng_key()
+        return random.uniform(key, shape=(batch_size, height, width), minval=0, maxval=1) 
+    
+    def display_measurement(self, measurement: jnp.ndarray) -> None:
+        fig, ax = plt.subplots(figsize=(5, 5))
+        im = ax.imshow(measurement, cmap='gray')
+        fig.colorbar(im, ax=ax)
+        plt.close()
+
+        return fig
+    
+    def display_object(self, object: jnp.ndarray) -> None:
+        fig, ax = plt.subplots(figsize=(5, 5))
+        im = ax.imshow(object, cmap='gray')
+        plt.close()
+
+        return fig
+
+    def display_optics(self) -> None:
+        # Create figure with 3 subplots
+        fig = plt.figure(figsize=(5, 5))
+        
+        # 1. PSF Plot (left)
+        ax1 = fig.add_subplot(111)
+        im1 = ax1.imshow(self.psf_layer.compute_psf(), cmap='gray')
+        fig.colorbar(im1, ax=ax1)
+        ax1.set_title('PSF')
+        ax1.axis('off')
+        
+        # Adjust layout
+        plt.tight_layout()
+        plt.close()
+
+        return fig
+    
+    def display_reconstruction(self) -> None:
+        # this is going to display a reconstruction image in the future, but for now I'm going to use it to just display wherever the PSF is nonzero 
+        # Create figure with 3 subplots
+        fig = plt.figure(figsize=(5, 5))
+
+        # 1. PSF Plot (left)
+        ax1 = fig.add_subplot(111)
+        im1 = ax1.imshow((self.psf_layer.compute_psf()) > 0, cmap='gray')
+        fig.colorbar(im1, ax=ax1)
+        ax1.set_title('PSF')
+        ax1.axis('off')
+        
+        # Adjust layout
+        plt.tight_layout()
+        plt.close()
+
+        return fig
+    
+    def normalize_psf(self):
+        new_psf_layer = self.psf_layer.normalize_psf()
+        return eqx.tree_at(lambda m: m.psf_layer, self, new_psf_layer)
+    
+    def normalize(self):
+        """Run all normalization and update steps.
+        
+        Returns:
+            Updated lensless imaging system with normalized PSF.
+        """
+        system = self.normalize_psf()
+        return system
