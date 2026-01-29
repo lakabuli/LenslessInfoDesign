@@ -44,7 +44,7 @@ LenslessInfoDesign/
 
 ## Model Availability
 
-Sec. 5 (Experimental Information Evaluation) uses a data-driven reconstruction algorithm, specifically a ConvNeXt model from Ponomarenko et al. [1], generously provided by Vasilisa Ponomarenko.
+Sec. 5 (Experimental Information Evaluation) uses a data-driven reconstruction algorithm (ConvNeXt) from Ponomarenko et al. [1], generously provided by Vasilisa Ponomarenko.
 
 **[1]** V. Ponomarenko, L. Kabuli, E. Markley, C. Hung, L. Waller, "Phase-mask-based lensless image reconstruction using self-attention," Proc. SPIE PC13333, Paper 12.3042497 (2024). [https://doi.org/10.1117/12.3042497](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/PC13333/PC133330U/Phase-mask-based-lensless-image-reconstruction-using-self-attention/10.1117/12.3042497.short)
 
@@ -52,23 +52,28 @@ The trained models for RML and DiffuserCam reconstructions using ConvNeXt are av
 
 ## Data Availability
 
-Sec. 5 (Experimental Information Evaluation) uses parallel lensless imaging system measurements captured for images from the MIRFLICKR-25000 dataset. The training data are available at the [parallel lensless dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
+Sec. 5 (Experimental Information Evaluation) uses parallel lensless imaging system measurements captured for images from the MIRFLICKR-25000 dataset. The training data are available at the [Parallel Lensless Dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
 
-Photon count calibration data for Fig. 4c is also available at the [parallel lensless dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
+Photon count calibration data for Fig. 4c is also available at the [Parallel Lensless Dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
 
 Mutual information estimates and other data necessary for reproducing figures are available in the corresponding directories within this repository.
 
 ## Paper
 
 ```bibtex
-@article{https://doi.org/10.48550/arxiv.2506.08513,
-  doi = {10.48550/ARXIV.2506.08513},
-  url = {https://arxiv.org/abs/2506.08513},
-  author = {Kabuli, Leyla A. and Pinkard, Henry and Markley, Eric and Hung, Clara S. and Waller, Laura},
-  title = {Designing lensless imaging systems to maximize information capture},
-  journal = {arXiv:2506.08513},
-  publisher = {arXiv},
-  year = {2025}
+@article{Kabuli2026LenslessInfo,
+author = {Leyla A. Kabuli and Henry Pinkard and Eric Markley and Clara S. Hung and Laura Waller},
+journal = {Optica},
+keywords = {Computational imaging; Imaging systems; Neural networks; Optical imaging; Systems design; Three dimensional imaging},
+number = {2},
+pages = {227--235},
+publisher = {Optica Publishing Group},
+title = {Designing lensless imaging systems to maximize information capture},
+volume = {13},
+month = {Feb},
+year = {2026},
+url = {https://opg.optica.org/optica/abstract.cfm?URI=optica-13-2-227},
+doi = {10.1364/OPTICA.570334},
 }
 ```
 
