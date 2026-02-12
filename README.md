@@ -1,7 +1,9 @@
 # LenslessInfoDesign: Designing lensless imaging systems to maximize information capture
 
-<!-- TODO: make a badge for journal too) -->
-[![arXiv](https://img.shields.io/badge/arXiv-2506.08513-<COLOR>.svg)](https://arxiv.org/abs/2506.08513)
+[![paper-Optica](https://img.shields.io/badge/paper-Optica-5C2D91.svg)](https://doi.org/10.1364/OPTICA.570334)
+[![arXiv](https://img.shields.io/badge/arXiv-2506.08513-b31b1b.svg)](https://arxiv.org/abs/2506.08513)
+
+
 
 
 ## About
@@ -48,13 +50,13 @@ Sec. 5 (Experimental Information Evaluation) uses a data-driven reconstruction a
 
 **[1]** V. Ponomarenko, L. Kabuli, E. Markley, C. Hung, L. Waller, "Phase-mask-based lensless image reconstruction using self-attention," Proc. SPIE PC13333, Paper 12.3042497 (2024). [https://doi.org/10.1117/12.3042497](https://www.spiedigitallibrary.org/conference-proceedings-of-spie/PC13333/PC133330U/Phase-mask-based-lensless-image-reconstruction-using-self-attention/10.1117/12.3042497.short)
 
-The trained models for RML and DiffuserCam reconstructions using ConvNeXt are available from [Google Drive](https://drive.google.com/drive/folders/129L_sWBN9wNy7yLfXQds_5uPFE36QFYO?usp=sharing). Download scripts are available in the relevant directories.
+The trained models for RML and DiffuserCam reconstructions using ConvNeXt are available from [Google Drive](https://drive.google.com/drive/folders/129L_sWBN9wNy7yLfXQds_5uPFE36QFYO?usp=sharing). Automatic download scripts are provided in the relevant directories within this repository.
 
 ## Data Availability
 
 Sec. 5 (Experimental Information Evaluation) uses parallel lensless imaging system measurements captured for images from the MIRFLICKR-25000 dataset. The training data are available at the [Parallel Lensless Dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
 
-Photon count calibration data for Fig. 4c is also available at the [Parallel Lensless Dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
+Photon count calibration data (Fig. 4c) are also available at the [Parallel Lensless Dataset website](https://waller-lab.github.io/parallel-lensless-dataset/datasets.html).
 
 Mutual information estimates and other data necessary for reproducing figures are available in the corresponding directories within this repository.
 
