@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="We evaluate and design lensless imaging systems using mutual information estimation.">
+  <meta name="keywords" content="lensless imaging, mutual information, information theory">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Designing lensless imaging systems to maximize information capture</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" type="image/png" sizes="48x48" href="./favicon.png?v=2">
+  <link rel="shortcut icon" type="image/x-icon" href="./favicon.ico?v=2">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script defer src="./static/js/index.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbar-menu">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div id="navbar-menu" class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="https://lakabuli.github.io" aria-label="Home">
+        <span class="icon">
+          <i class="fas fa-home"></i>
+        </span>
+      </a>
+      <a class="navbar-item" href="https://lakabuli.github.io/research">
+        More Research
+      </a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero publication-header">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Designing lensless imaging systems to maximize information capture</h1>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><a href="https://lakabuli.github.io">Leyla A. Kabuli</a><sup>1</sup>,</span>
+            <span class="author-block"><a href="https://henrypinkard.github.io">Henry Pinkard</a><sup>1</sup>,</span>
+            <span class="author-block"><a href="https://emarkley.github.io">Eric Markley</a><sup>2</sup>,</span>
+            <span class="author-block"><a href="https://www.linkedin.com/in/clarashung/">Clara S. Hung</a><sup>1</sup>,</span>
+            <span class="author-block"><a href="https://www.laurawaller.com">Laura Waller</a><sup>1</sup></span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Department of Electrical Engineering and Computer Sciences,
+              <br>
+              University of California, Berkeley</span>
+            <br>
+            <span class="author-block"><sup>2</sup>Graduate Program in Bioengineering,
+              <br>
+              University of California, Berkeley and University of California, San Francisco</span>
+          </div>
+
+          <div class="is-size-6 publication-authors">
+            <span class="author-block">
+              Correspondence to: lakabuli@berkeley.edu
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <div style="height:5px;"><br></div>
+              Optica 2026
+            </span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <span class="link-block">
+                <a href="https://doi.org/10.1364/OPTICA.570334"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fas fa-file-pdf"></i></span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2506.08513"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="ai ai-arxiv"></i></span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://github.com/lakabuli/LenslessInfoDesign"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon"><i class="fab fa-github"></i></span>
+                  <span>Code</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section is-paddingless">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Mask-based lensless imaging uses an optical encoder (e.g. a phase or amplitude mask) to capture measurements, then a computational decoding algorithm to reconstruct images. In this work, we evaluate and design lensless encoders based on the information content of their measurements using mutual information estimation. Our approach formalizes the object-dependent nature of lensless imaging and quantifies the interdependence between object sparsity, encoder multiplexing, and noise. Our analysis reveals that optimal encoder designs should tailor encoder multiplexing to object sparsity for maximum information capture, and that all optimally-encoded measurements share the same level of sparsity. Using mutual information-based optimization, we design information-optimal encoders for compressive imaging of fixed object distributions. Our designs demonstrate improved downstream reconstruction performance for objects in the distribution, without requiring joint optimization with a specific reconstruction algorithm. We validate our approach experimentally by evaluating lensless imaging systems directly from captured measurements, without the need for image formation models, reconstruction algorithms, or ground truth data. Our comprehensive analysis establishes design and engineering principles for lensless imaging systems, and offers a model for the study of general multiplexing systems, especially those with object-dependent performance.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Related Links</h2>
+        <div class="content has-text-justified">
+          <p>
+            Also check out our work on <a href="https://waller-lab.github.io/EncodingInformationWebsite/">Information-driven design of imaging systems</a>, and our work on <a href="https://lakabuli.github.io/posts/lensless_estimation_theory.html">Estimation-theoretic methods for lensless imaging system analysis</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{kabuli2026lenslessinfo,
+    author = {Leyla A. Kabuli and Henry Pinkard and Eric Markley and Clara S. Hung and Laura Waller},
+    journal = {Optica},
+    keywords = {Computational imaging; Imaging systems; Neural networks; Optical imaging; Systems design; Three dimensional imaging},
+    number = {2},
+    pages = {227--235},
+    publisher = {Optica Publishing Group},
+    title = {Designing lensless imaging systems to maximize information capture},
+    volume = {13},
+    month = {Feb},
+    year = {2026},
+    url = {https://opg.optica.org/optica/abstract.cfm?URI=optica-13-2-227},
+    doi = {10.1364/OPTICA.570334},
+}</code></pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>
+            Website template from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
